@@ -66,6 +66,39 @@
     return v0
 .end method
 
+.method public static getSplitScreenModeMaxFreeformCount()I
+    .registers 6
+
+    .line 1
+    invoke-static {}, Landroid/app/ActivityThread;->currentApplication()Landroid/app/Application;
+    move-result-object v0
+
+    if-eqz v0, :return_default
+
+    const-string v1, "sothx_project_treble_split_screen_mode_max_freeform_count"
+
+    invoke-virtual {v0}, Landroid/content/Context;->getContentResolver()Landroid/content/ContentResolver;
+    move-result-object v2
+
+    const/4 v3, 0x1  # default = 1
+
+    invoke-static {v2, v1, v3}, Landroid/provider/Settings$System;->getInt(Landroid/content/ContentResolver;Ljava/lang/String;I)I
+    move-result v1
+
+    const/16 v2, 0x4  # max = 4
+    invoke-static {v1, v2}, Ljava/lang/Math;->min(II)I
+    move-result v1
+
+    invoke-static {v1, v3}, Ljava/lang/Math;->max(II)I
+    move-result v0
+
+    return v0
+
+:return_default
+    const/4 v0, 0x1
+    return v0
+.end method
+
 .method public static getIsActiveMiuiDesktopMode()Z
     .registers 5
 
@@ -131,7 +164,7 @@
     return v0
 
     :check_embedded_or_split
-    # if (isInEmbeddedWindowingMode(stack) || isSplitScreenMode()) return 1;
+    # if (isInEmbeddedWindowingMode(stack)) return 1;
     invoke-direct {p0, p2}, Lcom/android/server/wm/MiuiFreeFormStackDisplayStrategy;->isInEmbeddedWindowingMode(Lcom/android/server/wm/MiuiFreeFormActivityStack;)Z
     move-result v0
     if-nez v0, :return_1
@@ -139,6 +172,10 @@
     invoke-direct {p0}, Lcom/android/server/wm/MiuiFreeFormStackDisplayStrategy;->isSplitScreenMode()Z
     move-result v0
     if-eqz v0, :return_4
+
+    invoke-static {}, Lcom/android/server/wm/MiuiFreeFormStackDisplayStrategy;->getSplitScreenModeMaxFreeformCount()I
+    move-result v0
+    return v0
 
     :return_1
     const/4 v0, 0x1
